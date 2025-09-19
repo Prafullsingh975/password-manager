@@ -1,35 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import React from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { Toaster } from 'react-hot-toast';
+import { useAuth } from './hooks/useAuth';
+import { AuthProvider } from './context/auth';
+import Auth from './pages/Auth';
+import Dashboard from './pages/Dashboard';
 
-function App() {
-  const [count, setCount] = useState(0)
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+const AppRouter: React.FC = () => {
+    const { isAuthenticated, isLoading } = useAuth();
+    
+    if (isLoading) {
+        return <div className="flex items-center justify-center min-h-screen bg-slate-900 text-white">Authenticating...</div>
+    }
+    
+    return (
+        <Routes>
+            <Route path="/" element={!isAuthenticated ? <Auth /> : <Navigate to="/dashboard" />} />
+            <Route path="/dashboard" element={isAuthenticated ? <Dashboard /> : <Navigate to="/" />} />
+        </Routes>
+    );
 }
 
-export default App
+function App() {
+  return (
+    <AuthProvider>
+        <Toaster position="bottom-right" toastOptions={{
+            style: {
+                background: '#334155', // slate-700
+                color: '#fff',
+            }
+        }}/>
+        <Router>
+            <AppRouter />
+        </Router>
+    </AuthProvider>
+  );
+}
+
+export default App;
+
